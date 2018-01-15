@@ -42,12 +42,12 @@ def main():
     run_test_init()
     run_test_append_string()
     run_test_double()
-#     run_test_shrink()
-#     run_test_double_then_shrink()
-#     run_test_reset()
-#     run_test_steal()
-#     run_test_get_history()
-#     run_test_combined_box()
+    run_test_shrink()
+    run_test_double_then_shrink()
+    run_test_reset()
+    run_test_steal()
+    run_test_get_history()
+    run_test_combined_box()
 
 
 ########################################################################
@@ -104,8 +104,12 @@ class Box(object):
         # --------------------------------------------------------------
         self.contents = contents
         self.volume = volume
+        self.og_volume = volume
+        self.og_contents = contents
+        self.before_reset = []
         if len(self.contents) > self.volume:
             self.contents = ''
+            self.og_contents = ''
 
     def append_string(self, additional_contents):
         """
@@ -160,37 +164,17 @@ class Box(object):
         #       Read_this_ONLY_when_asked_Part_2.txt
         #    and continue working on the problem.
         # --------------------------------------------------------------
-        # Determine how much space is available for the new contents,
-        # and then how many characters of the additional_contents
-        # can be appended to this Box's contents:
-
-        space = self.volume - len(self.contents)
-        number_of_characters_to_append = min(space,
-                                             len(additional_contents))
-
-        # Build up a string that is the characters to append
-        # (that is, those that will fit into this Box).
-        # Then append that string to this Box's contents:
-
-        stuff_to_add = ''
-        for k in range(number_of_characters_to_append):
-            stuff_to_add = stuff_to_add + additional_contents[k]
-        self.contents = self.contents + stuff_to_add
-
-        # Build up a string that is the characters that were NOT
-        # appended, by starting at the place where the previous loop
-        # left off and continuing to the end of the additional_contents.
-        # This will be a loop that goes NO times if the entire
-        # additional_contents fits into this Box's contents:
-
-        stuff_to_return = ''
-        for k in range(number_of_characters_to_append,
-                       len(additional_contents)):
-            stuff_to_return = stuff_to_return + additional_contents[k]
-
-        # Return the result from the previous loop:
-
-        return stuff_to_return
+        self.contents = self.contents + additional_contents
+        contents = ''
+        extra = ''
+        if len(self.contents) > self.volume:
+            for k in range(len(self.contents)):
+                if k < self.volume:
+                    contents = contents + self.contents[k]
+                else:
+                    extra = extra + self.contents[k]
+            self.contents = contents
+        return extra
 
     def double(self):
         """
@@ -289,6 +273,8 @@ class Box(object):
         # IMPORTANT: Write a solution to this problem in pseudo-code,
         # and THEN translate the pseudo-code to a solution.
         # --------------------------------------------------------------
+        self.volume = new_volume
+        return self.append_string('')
 
     def double_then_shrink(self, new_volume):
         """
@@ -342,6 +328,8 @@ class Box(object):
         #    DIFFICULTY:      5
         #    TIME ESTIMATE:   5 minutes.
         # --------------------------------------------------------------
+        s = self.double() + self.shrink(new_volume)
+        return len(s)
 
     def reset(self):
         """
@@ -361,6 +349,9 @@ class Box(object):
         #    DIFFICULTY:      4
         #    TIME ESTIMATE:   5 minutes.
         # --------------------------------------------------------------
+        self.before_reset = [self.contents] + self.before_reset
+        self.volume = self.og_volume
+        self.contents = self.og_contents
 
     def steal(self, other_box):
         """
@@ -393,6 +384,8 @@ class Box(object):
         # FOR FULL CREDIT, YOUR SOLUTION MUST BE NO MORE THAN
         #    ** TWO **   LINES OF CODE.
         ################################################################
+        leftover = self.append_string(other_box.contents)
+        other_box.contents = leftover
 
     def get_history(self):
         """
@@ -432,6 +425,7 @@ class Box(object):
         #    DIFFICULTY:      6
         #    TIME ESTIMATE:   5 minutes.
         # --------------------------------------------------------------
+        return self.before_reset
 
     def combined_box(self, other_box):
         """
@@ -458,6 +452,10 @@ class Box(object):
         #    DIFFICULTY:      4
         #    TIME ESTIMATE:   5 minutes.
         # --------------------------------------------------------------
+        new_contents = self.contents + other_box.contents
+        new_volume = self.volume + other_box.volume
+
+        return Box(new_contents, new_volume)
 
 
 ########################################################################
